@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no' />
+  
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js" ></script>
+  
+  <script src='http://api.tiles.mapbox.com/mapbox.js/v1.1.0/mapbox.js'></script>
+  <script src="/static/leaflet.markercluster/leaflet.markercluster.js"></script>
+
+  <script src="/static/bootstrap/js/bootstrap.min.js"></script>
+  
+  <link rel='stylesheet' 
+        href='http://api.tiles.mapbox.com/mapbox.js/v1.1.0/mapbox.css'  />
+  <link rel="stylesheet" href="/static/leaflet.markercluster/MarkerCluster.css" />
+  <link rel="stylesheet" href="/static/leaflet.markercluster/MarkerCluster.Default.css" />
+  <!--[if lte IE 8]>
+    <link href='http://api.tiles.mapbox.com/mapbox.js/v1.1.0/mapbox.ie.css' rel='stylesheet' >
+  <![endif]-->
+  
+  <link rel="stylesheet" href="/static/bootstrap/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="//yui.yahooapis.com/pure/0.2.0/pure-min.css">
+  
+  <style>
+    body { margin:0; padding:0; }
+    #map { position:fixed !important; top:0; bottom:0; width:100%; z-index: 0; }
+    
+    #map-ui {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 100;
+    }
+
+    #map-ui ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    #map-ui a {
+        font-size: 13px;
+        background: #FFF;
+        color: #3C4E5A;
+        display: block;
+        margin: 0;
+        padding: 0;
+        border: 1px solid #BBB;
+        border-bottom-width: 0;
+        min-width: 138px;
+        padding: 10px;
+        text-decoration: none;
+    }
+
+    #map-ui a:hover {
+        background: #ECF5FA;
+    }
+
+    #map-ui li:last-child a {
+        border-bottom-width: 1px;
+        -webkit-border-radius: 0 0 3px 3px;
+        border-radius: 0 0 3px 3px;
+    }
+
+    #map-ui li:first-child a {
+        -webkit-border-radius: 3px 3px 0 0;
+        border-radius: 3px 3px 0 0;
+    }
+
+    #map-ui a.active {
+        background: #3887BE;
+        border-color: #3887BE;
+        color: #FFF;
+    }    
+    
+    #main {
+        background-color: #fff;
+        width: 900px;
+        padding: 20px;
+        margin-top: 400px;
+        margin-left: auto;
+        margin-right: auto;
+        z-index: 10;
+        position: relative; 
+    }
+    
+    header {
+        margin-left: auto;
+        margin-right: auto;
+        z-index: 10;
+        height: 90px;
+        position: relative;
+        pointer-events: none;        
+    }
+    
+    .header-right {
+        width: 100px;
+        float: right;
+    }
+    
+    .op-uri {
+        font-size: 0.8em;
+    }
+    
+    .tile {
+      display: inline;
+      font-size: 100%;
+      padding: .5em 1.5em;
+      color: #fff;
+      border: 1px solid #999;
+      border: 0 rgba(0,0,0,0);
+      background-color: #0078e7;
+      text-decoration: none;
+      border-radius: 2px;
+      -webkit-font-smoothing: antialiased;
+      -webkit-transition: .1s linear -webkit-box-shadow;
+    }    
+    
+    .pure-button-success,
+    .pure-button-error,
+    .pure-button-warning,
+    .pure-button-secondary {
+        color: white;
+/*        border-radius: 4px;*/
+        text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+    }
+
+    .pure-button-transparent {
+        color: #000;
+        background: rgb(255, 255, 255); /* this is a white */
+    }
+
+    .pure-button-success {
+        background: rgb(28, 184, 65); /* this is a green */
+    }
+
+    .pure-button-error {
+        background: rgb(202, 60, 60); /* this is a maroon */
+    }
+
+    .pure-button-warning {
+        background: rgb(223, 117, 20); /* this is an orange */
+    }
+
+    .pure-button-secondary {
+        background: rgb(66, 184, 221); /* this is a light blue */
+    }
+
+    .pure-button-xsmall {
+        font-size: 70%;
+    }
+
+    .pure-button-small {
+        font-size: 85%;
+    }
+
+    .pure-button-large {
+        font-size: 110%;
+    }
+
+    .pure-button-xlarge {
+        font-size: 125%;
+    }    
+    
+  </style>
+</head>
+<body>
+
+<!-- <header>
+    <div class="header-right">
+        <p>Hello</p>
+    </div>
+</header> -->
+
+<!-- <div id="map-ui">
+    <ul>
+        <li><a href='#' id='filter-food'>Air temperature</a></li>
+        <li><a href='#' class='active' id='filter-all'>All</a></li>
+    </ul>
+    <div class="btn-group">
+      <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+        <span id="op-selector-value">Action</span>
+        <span class="caret"></span>
+      </a>
+      <ul id="select_property" class="dropdown-menu">
+          <li>
+             <a href="#">
+                 <span class="op-name">Air Temperature</span>
+                 <br />
+                 <span class="op-uri">http://www.google.com/air_temparature</span>
+             </a>
+           </li>
+           <li>
+              <a href="#">
+                  <span class="op-name">Waves</span>
+                  <br />
+                  <span class="op-uri">http://www.google.com/waves</span>
+              </a>
+           </li>
+      </ul>
+    </div>
+</div> -->
+
+<div id="map"></div>
+
+<div id="main">
+    <div class="tabbable"> <!-- Only required for left/right tabs -->
+      <ul class="nav nav-tabs">
+        <li class="active"><a href="#tab1" data-toggle="tab">Services</a></li>
+        <li><a href="#tab2" data-toggle="tab">Observed properties</a></li>
+      </ul>
+      <div class="tab-content">
+        <div class="tab-pane" id="tab1">
+          <p>
+              <button class="pure-button pure-button-small" href="#">
+                  <span class="op-name">National Data Buoy Center</span>
+                  <br />
+                  <span class="op-uri">http://sdf.ndbc.noaa.gov/sos/server.php</span>
+              </button>
+              <button class="pure-button pure-button-small" href="#">
+                  <span class="op-name">PacIOOS</span>
+                  <br />
+                  <span class="op-uri">http://www.google.com/waves</span>
+              </button>
+          </p>
+        </div>
+        <div class="tab-pane active" id="tab2">
+          <p>
+            <button id="btn-clear-property" class="pure-button pure-button-warning pure-button-disabled">
+              <i class="icon icon-remove icon-white"></i> Clear filter
+            </button>
+          </p>
+          <p>
+              <button class="pure-button btn-filter-property" data-uri="http://mmisw.org/ont/cf/parameter/air_temperature">
+                  <span class="op-name">Air Temperature</span>
+                  <br />
+                  <span class="op-uri">http://mmisw.org/ont/cf/parameter/air_temperature</span>
+              </button>
+              <button class="pure-button btn-filter-property" data-uri="http://mmisw.org/ont/cf/parameter/air_pressure_at_sea_level">
+                  <span class="op-name">Air Pressure At Sea Level</span>
+                  <br />
+                  <span class="op-uri">http://mmisw.org/ont/cf/parameter/air_pressure_at_sea_level</span>
+              </button>
+          </p>
+        </div>
+      </div>
+    </div>
+    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+    </div>
+
+<script type='text/javascript'>
+
+    var map = L.mapbox.map('map', 'examples.map-4l7djmvo', {
+        scrollWheelZoom: false
+    }).setView([40, -74.50], 4);
+    
+    // var markerLayer = L.mapbox.markerLayer()
+    //     .loadURL('/static/geojson/ndbc.geojson');
+    
+    // alert('LEN: ' + markerLayer.markers())
+    // var markers = new L.MarkerClusterGroup();
+    // markers.addLayer()
+
+    // map.addLayer(markerLayer);    
+    // map.addLayer(markers);  
+    
+    // $.getJSON('ajax/test.json', function(data) {
+    //     L.geoJson(data, {
+    //       onEachFeature: function (feature, layer) {
+    //         markers.addLayer(new L.Marker())
+    //               layer.bindPopup(feature.properties.description);
+    //           }
+    //     });
+    // });
+
+    // var clusters; 
+    var markers = new L.MarkerClusterGroup({
+        showCoverageOnHover: true
+    }); 
+    
+    function loadMarkers(_filter) {
+        
+        $.getJSON('/static/geojson/ndbc.geojson', function(data) {
+            markers.clearLayers();
+            var geojson = L.geoJson(data.features, {
+                pointToLayer: function(feature, latlng) {
+                    var marker = 
+                        L.marker(latlng, {
+                                icon:  L.mapbox.marker.icon({
+                                    'marker-color': 'f0f0f0', 
+                                    'marker-size': 'small'
+                                }), 
+                        });
+                    var popup = 
+                        '<p>' + 
+                        feature.properties['offering-id'] + 
+                        '</p>';
+                        
+                    marker.bindPopup(popup, {
+                        closeButton: false
+                    });
+                    return marker;
+                }, 
+                filter: _filter ? _filter : function(f) { return true; }
+            }).addTo(markers); 
+        });
+    }
+    
+    $(document).ready(function() {
+      
+        // clear properties filters
+        $("#btn-clear-property").click(function() {
+            var cls = 'pure-button-secondary';
+            $(".btn-filter-property").removeClass(cls);
+            $("#btn-clear-property").addClass('pure-button-disabled');
+            loadMarkers();
+        });
+
+        // toggles a properties filter 
+        $(".btn-filter-property").click(function() {
+            var cls = 'pure-button-secondary';
+            $(".btn-filter-property").removeClass(cls);
+            $(this).addClass(cls);
+            $("#btn-clear-property").removeClass('pure-button-disabled');
+            var uri = $(this).data('uri');
+            loadMarkers(function(f) {
+                var ps = f.properties['offering-properties'];
+                if (ps && ps.indexOf(uri) >= 0)
+                    return true;
+                return false;
+            });
+        });
+        
+        $("#select_property li").click(function() {
+            $(this).parent().each(function(idx, val) {
+               $(this).removeClass('active');
+            });
+           $(this).addClass('active');
+           $("#op-selector-value").text($(this).find(".op-name").text());
+           return true;
+        });
+        
+        // var food = document.getElementById('filter-food');
+        // var all = document.getElementById('filter-all');
+
+        // food.onclick = function(e) {
+        //     all.className = '';
+        //     this.className = 'active';
+        //     // The setFilter function takes a GeoJSON feature object
+        //     // and returns true to show it or false to hide it.
+        //     // clusters.setFilter(function(f) {
+        //     //     return f.properties['marker-symbol'] === 'fast-food';
+        //     // });
+        //     loadMarkers(function(f) {
+        //         var props = f.properties['Observed properties'];
+        //         if (props && props.indexOf("Air Temperature") >= 0)
+        //             return true;
+        //         // return f.properties['marker-symbol'] === 'fast-food';
+        //     });
+        //     return false;
+        // };
+
+        // all.onclick = function() {
+        //     food.className = '';
+        //     this.className = 'active';
+        //     // clusters.setFilter(function(f) {
+        //     //     // Returning true for all markers shows everything.
+        //     //     return true;
+        //     // });
+        //     loadMarkers();
+        //     return false;
+        // };        
+  
+        // $.getJSON('/static/geojson/ndbc.geojson', function(data) {
+        //   
+        //     clusters = new L.MarkerClusterGroup({
+        //         showCoverageOnHover: true
+        //     });
+        // 
+        //     var points = L.geoJson(data.features, {
+        //         pointToLayer: function(feature, latlng) {
+        //             var marker = 
+        //                 L.marker(latlng, {
+        //                         icon:  L.mapbox.marker.icon({
+        //                             // 'marker-symbol': 'post', 
+        //                             'marker-color': 'f0f0f0', 
+        //                             'marker-size': 'small'
+        //                         }), 
+        //                 });
+        //             var popup = 
+        //                 '<p>' + 
+        //                 feature.properties['Offering Id'] + 
+        //                 '</p>';
+        //                 
+        //             marker.bindPopup(popup, {
+        //                 closeButton: false
+        //             });
+        //             // clusters.addLayer(marker);
+        //             return marker;
+        //         }, 
+        //     }).addTo(clusters);
+        // 
+        //     // map.addLayer(clusters);
+        //     clusters.on('click', function(e) {
+        //           map.panTo(e.layer.getLatLng());
+        //     });
+        // });
+        
+        
+        // map.addLayer(clusters);
+        markers.on('click', function(e) {
+              map.panTo(e.layer.getLatLng());
+        });
+        
+        map.addLayer(markers);
+        
+        loadMarkers();
+    });
+    
+</script>
+</body>
+</html>
