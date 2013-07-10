@@ -62,16 +62,75 @@
     </script>
     
     <script type="text/x-handlebars" data-template-name="test">
+    <p><button {{action 'createService'}}
+    class="pure-button pur-button-small pure-button-secondary">Create service</button></p>
+    <p><button {{action 'createProperty'}}
+    class="pure-button pur-button-small pure-button-secondary">Create property</button></p>
+    
+    <div class="tabbable"> 
+        <ul class="nav nav-tabs">
+            <li class="active"><a href="#tab1" data-toggle="tab">Services</a></li>
+            <li><a href="#tab2" data-toggle="tab">Observed properties</a></li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane active" id="tab1">
+            Services:
+            {{#each controller}}
+            {{#if isService}}
+            <div {{bindAttr class="on :item"}}>
+                <p>
+                <button {{action 'tap' this}} class="pure-button">{{name}}</button>
+                </p>
+                <p>
+                {{view Ember.TextField valueBinding='name'}}
+                </p>
+            </div>
+            {{/if}}
+            {{/each}}
+            </div>
+            <div class="tab-pane" id="tab2">
+            Properties: 
+            {{#each controller}}
+            {{#if isProperty}}
+            <div {{bindAttr class="on :item"}}>
+                <p>
+                <button {{action 'tap' this}} class="pure-button">{{name}}</button>
+                </p>
+                <p>
+                {{view Ember.TextField valueBinding='name'}}
+                </p>
+            </div>
+            {{/if}}
+            {{/each}}
+            </div>
+        </div>
+    </div>
+    </script>
+    
+    <script type="text/x-handlebars" data-template-name="test2">
+        <p><button {{action 'createService'}}
+        class="pure-button pur-button-small pure-button-secondary">Create service</button></p>
+        <p><button {{action 'createProperty'}}
+        class="pure-button pur-button-small pure-button-secondary">Create property</button></p>
         <p><button {{action 'create'}}
         class="pure-button pur-button-small pure-button-secondary">Create</button></p>
-        Test:
-        {{#each model}}
-        <div {{bindAttr class="active"}}>
-            <p {{action 'tap' this}}>{{name}}</p>
+        <hr />
+        {{#each controller}}
+        <div {{bindAttr class="active :item"}}>
+            <p>
+            <button {{action 'tap' this}} class="pure-button">{{name}}</button>
             <button {{action 'remove' this}} 
                     class="pure-button pur-button-small pure-button-error">Remove</button>
-            <p>{{view Ember.TextField valueBinding='name'}}</p>
+            </p>
+            {{view Ember.TextField valueBinding='name'}}
         </div>
+        {{/each}}
+        <hr />
+        <p><strong>Services</strong></p>
+        {{#each controller}}
+        {{#if isService}}
+        <p>{{name}}</p>
+        {{/if}}
         {{/each}}
     </script>
     
