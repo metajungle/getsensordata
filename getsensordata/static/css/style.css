@@ -1,0 +1,147 @@
+body { margin:0; padding:0; }
+#map { position:fixed !important; top:0; bottom:0; width:100%; z-index: 0; }
+
+#map-ui {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 100;
+}
+
+#map-ui ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+#map-ui a {
+    font-size: 13px;
+    background: #FFF;
+    color: #3C4E5A;
+    display: block;
+    margin: 0;
+    padding: 0;
+    border: 1px solid #BBB;
+    border-bottom-width: 0;
+    min-width: 138px;
+    padding: 10px;
+    text-decoration: none;
+}
+
+#map-ui a:hover {
+    background: #ECF5FA;
+}
+
+#map-ui li:last-child a {
+    border-bottom-width: 1px;
+    -webkit-border-radius: 0 0 3px 3px;
+    border-radius: 0 0 3px 3px;
+}
+
+#map-ui li:first-child a {
+    -webkit-border-radius: 3px 3px 0 0;
+    border-radius: 3px 3px 0 0;
+}
+
+#map-ui a.active {
+    background: #3887BE;
+    border-color: #3887BE;
+    color: #FFF;
+}    
+
+#main {
+    background-color: #fff;
+    width: 900px;
+    padding: 20px;
+    margin-top: 400px;
+    margin-left: auto;
+    margin-right: auto;
+    z-index: 10;
+    position: relative; 
+}
+
+header {
+    margin-left: auto;
+    margin-right: auto;
+    z-index: 10;
+    height: 90px;
+    position: relative;
+    pointer-events: none;        
+}
+
+.header-right {
+    width: 100px;
+    float: right;
+}
+
+.active {
+  background: rgb(66, 184, 221); /* this is a light blue */
+}
+
+.op-uri {
+    font-size: 0.8em;
+}
+
+.tile {
+  display: inline;
+  font-size: 100%;
+  padding: .5em 1.5em;
+  color: #fff;
+  border: 1px solid #999;
+  border: 0 rgba(0,0,0,0);
+  background-color: #0078e7;
+  text-decoration: none;
+  border-radius: 2px;
+  -webkit-font-smoothing: antialiased;
+  -webkit-transition: .1s linear -webkit-box-shadow;
+}    
+
+.btn-filter-property {
+  margin: 4px;
+}
+
+.pure-button-success,
+.pure-button-error,
+.pure-button-warning,
+.pure-button-secondary {
+    color: white;
+/*        border-radius: 4px;*/
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+}
+
+.pure-button-transparent {
+    color: #000;
+    background: rgb(255, 255, 255); /* this is a white */
+}
+
+.pure-button-success {
+    background: rgb(28, 184, 65); /* this is a green */
+}
+
+.pure-button-error {
+    background: rgb(202, 60, 60); /* this is a maroon */
+}
+
+.pure-button-warning {
+    background: rgb(223, 117, 20); /* this is an orange */
+}
+
+.pure-button-secondary {
+    background: rgb(66, 184, 221); /* this is a light blue */
+}
+
+.pure-button-xsmall {
+    font-size: 70%;
+}
+
+.pure-button-small {
+    font-size: 85%;
+}
+
+.pure-button-large {
+    font-size: 110%;
+}
+
+.pure-button-xlarge {
+    font-size: 125%;
+}    
