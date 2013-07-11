@@ -78,6 +78,10 @@ header {
   background: rgb(66, 184, 221); /* this is a light blue */
 }
 
+.button-facet {
+  margin: 4px;
+}
+
 .item {
   padding: 1px 8px;
 }

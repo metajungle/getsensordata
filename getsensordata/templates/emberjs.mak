@@ -33,112 +33,58 @@
 <body>
     
     <script type="text/x-handlebars">
-    
     <div id="map"></div>
 
     <div id="main">
-        <div class="tabbable"> <!-- Only required for left/right tabs -->
-          <ul class="nav nav-tabs">
-            <li class="active"><a href="#tab1" data-toggle="tab">Services</a></li>
-            <li><a href="#tab2" data-toggle="tab">Observed properties</a></li>
-          </ul>
-          <div class="tab-content">
-            <div class="tab-pane" id="tab1">
-              <p>
-                  <button class="pure-button pure-button-small" href="#">
-                      <span class="op-name">National Data Buoy Center</span>
-                      <br />
-                      <span class="op-uri">http://sdf.ndbc.noaa.gov/sos/server.php</span>
-                  </button>
-                  <button class="pure-button pure-button-small" href="#">
-                      <span class="op-name">PacIOOS</span>
-                      <br />
-                      <span class="op-uri">http://www.google.com/waves</span>
-                  </button>
-              </p>
-            </div>
-            <div class="tab-pane active" id="tab2">
-              <p>
-              <button id="test">Test</button>
-              </p>
-              <p>
-                <button id="btn-clear-property" class="pure-button pure-button-warning pure-button-disabled">
-                  <i class="icon icon-remove icon-white"></i> Clear filter
-                </button>
-              </p>
-              <p>
-                  <button class="pure-button btn-filter-property" data-uri="http://mmisw.org/ont/cf/parameter/air_temperature">
-                      <span class="op-name">Air Temperature</span>
-                      <br />
-                      <span class="op-uri">http://mmisw.org/ont/cf/parameter/air_temperature</span>
-                  </button>
-                  <button class="pure-button btn-filter-property" data-uri="http://mmisw.org/ont/cf/parameter/air_pressure_at_sea_level">
-                      <span class="op-name">Air Pressure At Sea Level</span>
-                      <br />
-                      <span class="op-uri">http://mmisw.org/ont/cf/parameter/air_pressure_at_sea_level</span>
-                  </button>
-              </p>
-            </div>
-          </div>
-        </div>
-        
         {{outlet}}
-        
-        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-        </div>
-    </script>
-    
-    <script type="text/x-handlebars" data-template-name="index/_ops">
-        {{#each model}}
-        <button class="pure-button btn-filter-property">
-            <span class="op-name">{{name}}</span>
-            <br />
-            <span class="op-uri">{{uri}}</span>
-        </button>
-        {{/each}}
-    </script>
-    
-    <script type="text/x-handlebars" id="properties">
-    <p>
-    {{#each App.propertiesController}}
-        {{view App.myView this}}
-    {{/each}}
-    </p>
-    </script> 
-    
-    <script type="text/x-handlebars" id="properties2">
-    <p>
-    {{#each App.propertiesController}}
-    <button class="pure-button {{#if active}}pure-button-secondary{{else}}pure-button-disabled{{/if}} btn-filter-property">
-        <span class="op-name">{{name}}</span>
-        <br />
-        <span class="op-uri">{{uri}}</span>
-    </button>
-    {{/each}}
-    </p>
-    </script> 
-    
-    <script type="text/x-handlebars" data-template-name="index">
-        {{#each model}}
-        <a class="pure-button btn-filter-property {{#if isActive}}pure-button-secondary{{else}}pure-button-disabled{{/if}}">
-            <span class="op-name">{{name}}</span>
-            <br />
-            <span class="op-uri">{{uri}}</span>
-        </a>
-        {{/each}}
-    </script>
 
-    <script type="text/x-handlebars" data-template-name="about">
-      <ul>
-      {{#each model}}
-        <li>{{name}}</li>
-      {{/each}}
-      </ul>
+        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+        
+    </div>
     </script>
     
+    <script type="text/x-handlebars" data-template-name="facet">
+    <div class="tabbable"> 
+        <ul class="nav nav-tabs">
+            <li class="active"><a href="#tab1" data-toggle="tab">Observed properties</a></li>
+            <li><a href="#tab2" data-toggle="tab">Services</a></li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane active" id="tab1">
+            {{#each controller}}
+            {{#if isProperty}}
+            <button {{action 'tap' this}} 
+                    {{bindAttr class="on :pure-button :pure-button-small :button-facet"}}
+                    href="#">
+                <span class="op-name">{{name}}</span>
+                <br />
+                <span class="op-uri">{{uri}}</span>
+            </button>
+            {{/if}}
+            {{/each}}
+            </div>
+            <div class="tab-pane" id="tab2">
+            Services:
+            {{#each controller}}
+            {{#if isService}}
+            <div {{bindAttr class="on :item"}}>
+                <p>
+                <button {{action 'tap' this}} class="pure-button">{{name}}</button>
+                </p>
+                <p>
+                {{view Ember.TextField valueBinding='name'}}
+                </p>
+            </div>
+            {{/if}}
+            {{/each}}
+            </div>            
+        </div>
+    </div>
+    </script>    
+
     <script src="/static/js/libs/handlebars-1.0.0-rc.4.js"></script>
     <script src="/static/js/libs/ember-1.0.0-rc.6.js"></script>
     <!--<script src="/static/js/libs/ember-data-latest.min.js"></script>-->
@@ -216,10 +162,20 @@
             }).addTo(markers); 
             
             // add properties
+            var observedProperties = [];
             for (var i = 0; i < props.length; i++) {
                 var p = props[i];
-                App.propertiesController.add(uriPretty(p), p);
+                observedProperties.push({
+                    name: uriPretty(p), 
+                    uri: p
+                }); 
             }
+            Ember.Instrumentation.instrument("facet.properties.set", 
+                observedProperties); 
+            // for (var i = 0; i < props.length; i++) {
+            //     var p = props[i];
+            //     //App.propertiesController.add(uriPretty(p), p);
+            // }
         });
     }
     

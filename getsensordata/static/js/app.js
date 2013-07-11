@@ -2,111 +2,140 @@ App = Ember.Application.create();
 
 App.Router.map(function() {
   // put your routes here
-  this.resource('properties');
+  this.resource('facet');
 });
 
-App.Store = DS.Store.extend({
-  revision: 12,
-  adapter: 'DS.FixtureAdapter'
-  // adapter: DS.RESTAdapter.extend({
-  //   url: 'http://localhost:3000'
-  // })
-});
-
-App.Properties = Ember.Object.extend({
-    active: null, 
-    name: null,
-    uri: null
-});
-
-App.AllRoute = Ember.Route.extend({
-  model: function() {
-    return App.Post.find();
+App.FacetRoute = Ember.Route.extend({
+  setupController: function (controller, model) {
+    Ember.Instrumentation.subscribe("facet.properties.set", {
+      before: function(name, timestamp, payload) {
+        console.log('Recieved ', name, ' at ' + timestamp + ' with payload: ', payload);
+        controller.send('setProperties', payload);
+      },
+      after: function() {}
+    });
   }
 });
 
-// App.PropertiesRoute = Ember.Route.extend({
-//   // model: function() {
-//   //     return App.Properties.find();
-//   // }
-// });
-
-App.IndexRoute = Ember.Route.extend({
-  model: function() {
-      return App.Properties.find();
-    // return ['red', 'yellow', 'blue'];
-  }
-});
-
-App.MyView = Ember.View.extend({
-   tagName: 'button', 
-   classNames: ['pure-button', 'btn-filter-property']
-});
-
-App.myView = App.MyView.create();
-
-App.PropertiesController = Ember.ArrayController.extend({
+App.FacetController = Ember.ArrayController.extend({
     content: null,
     init: function() {
         this._super();
-        return this.set('content', Ember.A());
+        var items = Ember.A();
+        return this.set('content', items);
     }, 
-    add: function (name, uri) {
-        var p = App.Properties.create({
-            active: true, 
-            name: name,
-            uri: uri
-        });
-        this.pushObject(p);
+    lookupItemController: function(object) {
+        return object.get('type');
     },
-    remove: function (p) {
-        this.removeObject(p);
-    },
-    clear: function() {
-        this.set('content', Ember.A());
+    setProperties: function(context) {
+        if (Object.prototype.toString.call(context) === '[object Array]') {
+            for (var i = 0; i < context.length; i++) {
+                var p = context[i];
+                this.pushObject(App.Property.create({
+                    name: p['name'], 
+                    uri: p['uri']
+                }));
+            }
+        }
     }, 
-    toggle: function(o) {
-        o.set('active', true);
-        console.log('clicked...');
-        // alert(o['name']);
+    tap: function(o) {
+        var items = this.get('content');
+        console.log('Hello from controller: ' + o.get('name'));
+        console.log('Items: ' + items.length); 
+        if (o.isOn()) {
+            console.log('Nothing to do');
+            return;
+        }
+        for (var i = 0; i < items.length; i++) {
+            // true if this item, false otherwise
+            // compare by type only 
+            if (items[i].get('type') == o.get('type')) 
+                items[i].setOn(items[i] == o)
+        }
+        for (var i = 0; i < items.length; i++) {
+            var item = items[i];
+            if (item.isOn()) {
+                console.log('Filter by: ' + item.get('name'));
+            }
+        }
+        o.tap();
+    }, 
+    create: function() {
+        this.pushObject(App.Test.create({
+            name:'New object', 
+            type: 'service', 
+            on: false
+        })); 
+    }, 
+    createService: function() {
+        this.pushObject(App.Service.create({
+            name:'New service', 
+        })); 
+    }, 
+    createProperty: function() {
+        this.pushObject(App.Property.create({
+            name:'New property', 
+        })); 
+    }, 
+    remove: function(o) {
+        console.log('Delete')
+        this.removeObject(o);
     }
 });
 
-App.propertiesController = App.PropertiesController.create();
-
-App.PropertiesRoute = Ember.Route.extend({
-   model: function() {
-       return App.propertiesController.find(function() { 
-           return true; 
-       });
-   }
+App.ServiceController = Ember.ObjectController.extend({
+    isService: function() {
+        return true;
+    }
 });
 
-// App.PropertiesController = Ember.ObjectController.extend({
-//     isActive: false,
-//     toggle: function() {
-//         this.set('isActive', !this.get('isActive')); 
-//     }
-// });
-
-App.OPController = Ember.ObjectController.extend({
-  isActive: false,
-
-  toggle: function() {
-      this.set('isActive', !this.get('isActive'));
-  }
-
-  // deactivate: function() {
-  //   this.set('isActive', false);
-  //   //this.get('store').commit();
-  // }
+App.PropertyController = Ember.ObjectController.extend({
+    isProperty: function() {
+        return true;
+    }
 });
 
 
-// App.Properties = DS.Model.extend({
-//     name: DS.attr('string'),
-//     uri: DS.attr('string')
-// });
+App.Facet = Ember.Object.extend({
+    tap: function() {
+        console.log('Hi from the object: ' + this.get('name'));
+    }, 
+    setOn: function(status) {
+        this.set('on', status);
+    },
+    isOn: function() {
+        return this.get('on');
+    }
+});
 
-//App.OP.FIXTURES = [];
-// App.Properties.FIXTURES = [{'id':1, 'name':'Test2', 'uri':'http://www.yahoo.com'}];
+App.Service = Ember.Object.extend({
+    name: 'Untitled service', 
+    type: 'service', 
+    endpoint: '', 
+    on: false, 
+    tap: function() {
+        console.log('Hi from SERVICE: ' + this.get('name'));
+    }, 
+    setOn: function(status) {
+        this.set('on', status);
+    },
+    isOn: function() {
+        return this.get('on');
+    }
+});
+
+App.Property = Ember.Object.extend({
+    name: 'Untitled property', 
+    type: 'property', 
+    uri: '', 
+    on: false, 
+    tap: function() {
+        console.log('Hi from PROPERTY: ' + this.get('name'));
+    }, 
+    setOn: function(status) {
+        this.set('on', status);
+    },
+    isOn: function() {
+        return this.get('on');
+    }
+});
