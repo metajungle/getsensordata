@@ -54,6 +54,11 @@
         </ul>
         <div class="tab-content">
             <div class="tab-pane active" id="tab1">
+            <p>
+              <button id="btn-clear-property" class="pure-button pure-button-warning">
+                <i class="icon icon-remove icon-white"></i> Clear filter
+              </button>
+            </p>
             {{#each controller}}
             {{#if isProperty}}
             <button {{action 'tap' this}} 
@@ -124,8 +129,147 @@
         return value;
     }
     
-    function loadMarkers(_filter) {
+    function createFilter(items) {
+        var fn = function(f) {
+            // for (var i = 0; i < items.length; i++) {
+            //     var item = items[i];
+            //     console.log('URI: ' + item.get('uri') + "; S: " + item.get('on'));
+            // }
+            var show = false;
+            var ps = f.properties['offering-properties'];
+            for (var i = 0; i < items.length; i++) {
+                var item = items[i];
+                if (ps && ps.indexOf(item.get('uri')) >= 0) {
+                    if (!show && item.isOn()) {
+                        show = true;
+                    }
+                }
+            }
+            return show;
+        };
+        return fn;
+    }
+    
+    var features = [];
+    
+    function getFeatures(_callback, _filter) {
+         $.getJSON('/static/geojson/ndbc.geojson', function(data) {
+             features = data.features; 
+             _callback(data.features, _filter);
+         });
+    }
+    
+    function updateFeatures(features, _filter) {
+        markers.clearLayers();
+
+        var props = [];
         
+        var geojson = L.geoJson(features, {
+            pointToLayer: function(feature, latlng) {
+                var marker = 
+                    L.marker(latlng, {
+                            icon:  L.mapbox.marker.icon({
+                                'marker-color': 'f0f0f0', 
+                                'marker-size': 'small'
+                            }), 
+                    });
+                var popup = 
+                    '<p>' + 
+                    feature.properties['offering-id'] + 
+                    '</p>';
+                    
+                var ps = feature.properties['offering-properties']
+                if (ps) {
+                    for (var i = 0; i < ps.length; i++) {
+                        var p = ps[i];
+                        if (!props.contains(p)) {
+                            props.pushObject(p);
+                        }
+                    }
+                }
+                
+                marker.bindPopup(popup, {
+                    closeButton: false
+                });
+                return marker;
+            }, 
+            // filter: _filter ? _filter : function(f) { return true; }
+            filter: _filter ? _filter : null
+        }).addTo(markers); 
+        
+        // add properties
+        var observedProperties = [];
+        for (var i = 0; i < props.length; i++) {
+            var p = props[i];
+            observedProperties.push({
+                name: uriPretty(p), 
+                uri: p
+            }); 
+        }
+        Ember.Instrumentation.instrument("facet.properties.set", 
+            observedProperties);
+    }
+    
+    function updateMarkers(_filter) {
+        
+        if (features.length == 0) {
+            getFeatures(updateFeatures, _filter); 
+        } else {
+            updateFeatures(features, _filter);     
+        }
+        
+        // console.log(features.length);
+        // 
+        // markers.clearLayers();
+        // 
+        // var props = [];
+        // var geojson = L.geoJson(features, {
+        //     pointToLayer: function(feature, latlng) {
+        //         var marker = 
+        //             L.marker(latlng, {
+        //                     icon:  L.mapbox.marker.icon({
+        //                         'marker-color': 'f0f0f0', 
+        //                         'marker-size': 'small'
+        //                     }), 
+        //             });
+        //         var popup = 
+        //             '<p>' + 
+        //             feature.properties['offering-id'] + 
+        //             '</p>';
+        //             
+        //         var ps = feature.properties['offering-properties']
+        //         if (ps) {
+        //             for (var i = 0; i < ps.length; i++) {
+        //                 var p = ps[i];
+        //                 if (!props.contains(p)) {
+        //                     props.pushObject(p);
+        //                 }
+        //             }
+        //         }
+        //         
+        //         marker.bindPopup(popup, {
+        //             closeButton: false
+        //         });
+        //         return marker;
+        //     }, 
+        //     filter: _filter ? _filter : function(f) { return true; }
+        // }).addTo(markers); 
+        // 
+        // // add properties
+        // var observedProperties = [];
+        // for (var i = 0; i < props.length; i++) {
+        //     var p = props[i];
+        //     observedProperties.push({
+        //         name: uriPretty(p), 
+        //         uri: p
+        //     }); 
+        // }
+        // Ember.Instrumentation.instrument("facet.properties.set", 
+        //     observedProperties); 
+    }
+        
+    function updateMarkersOld(_filter) {
+    
         $.getJSON('/static/geojson/ndbc.geojson', function(data) {
             markers.clearLayers();
             var props = [];
@@ -142,7 +286,7 @@
                         '<p>' + 
                         feature.properties['offering-id'] + 
                         '</p>';
-                        
+                    
                     var ps = feature.properties['offering-properties']
                     if (ps) {
                         for (var i = 0; i < ps.length; i++) {
@@ -152,7 +296,7 @@
                             }
                         }
                     }
-                    
+                
                     marker.bindPopup(popup, {
                         closeButton: false
                     });
@@ -160,7 +304,7 @@
                 }, 
                 filter: _filter ? _filter : function(f) { return true; }
             }).addTo(markers); 
-            
+        
             // add properties
             var observedProperties = [];
             for (var i = 0; i < props.length; i++) {
@@ -176,7 +320,7 @@
             //     var p = props[i];
             //     //App.propertiesController.add(uriPretty(p), p);
             // }
-        });
+        });        
     }
     
     $(document).ready(function() {
@@ -201,10 +345,10 @@
     
         // clear properties filters
         $("#btn-clear-property").click(function() {
-            var cls = 'pure-button-secondary';
-            $(".btn-filter-property").removeClass(cls);
-            $("#btn-clear-property").addClass('pure-button-disabled');
-            loadMarkers();
+            // var cls = 'pure-button-secondary';
+            // $(".btn-filter-property").removeClass(cls);
+            // $("#btn-clear-property").addClass('pure-button-disabled');
+            updateMarkers();
         });
 
         // toggles a properties filter 
@@ -214,7 +358,7 @@
             $(this).addClass(cls);
             $("#btn-clear-property").removeClass('pure-button-disabled');
             var uri = $(this).data('uri');
-            loadMarkers(function(f) {
+            updateMarkers(function(f) {
                 var ps = f.properties['offering-properties'];
                 if (ps && ps.indexOf(uri) >= 0)
                     return true;
@@ -242,7 +386,7 @@
         //     // clusters.setFilter(function(f) {
         //     //     return f.properties['marker-symbol'] === 'fast-food';
         //     // });
-        //     loadMarkers(function(f) {
+        //     updateMarkers(function(f) {
         //         var props = f.properties['Observed properties'];
         //         if (props && props.indexOf("Air Temperature") >= 0)
         //             return true;
@@ -258,7 +402,7 @@
         //     //     // Returning true for all markers shows everything.
         //     //     return true;
         //     // });
-        //     loadMarkers();
+        //     updateMarkers();
         //     return false;
         // };        
   
@@ -305,7 +449,7 @@
         
         map.addLayer(markers);
         
-        loadMarkers();
+        updateMarkers();
     });
     
     </script>

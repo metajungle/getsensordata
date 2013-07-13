@@ -141,7 +141,7 @@
         showCoverageOnHover: true
     }); 
     
-    function loadMarkers(_filter) {
+    function updateMarkers(_filter) {
         
         $.getJSON('/static/geojson/ndbc.geojson', function(data) {
             markers.clearLayers();
@@ -176,7 +176,7 @@
             var cls = 'pure-button-secondary';
             $(".btn-filter-property").removeClass(cls);
             $("#btn-clear-property").addClass('pure-button-disabled');
-            loadMarkers();
+            updateMarkers();
         });
 
         // toggles a properties filter 
@@ -186,7 +186,7 @@
             $(this).addClass(cls);
             $("#btn-clear-property").removeClass('pure-button-disabled');
             var uri = $(this).data('uri');
-            loadMarkers(function(f) {
+            updateMarkers(function(f) {
                 var ps = f.properties['offering-properties'];
                 if (ps && ps.indexOf(uri) >= 0)
                     return true;
@@ -214,7 +214,7 @@
         //     // clusters.setFilter(function(f) {
         //     //     return f.properties['marker-symbol'] === 'fast-food';
         //     // });
-        //     loadMarkers(function(f) {
+        //     updateMarkers(function(f) {
         //         var props = f.properties['Observed properties'];
         //         if (props && props.indexOf("Air Temperature") >= 0)
         //             return true;
@@ -230,7 +230,7 @@
         //     //     // Returning true for all markers shows everything.
         //     //     return true;
         //     // });
-        //     loadMarkers();
+        //     updateMarkers();
         //     return false;
         // };        
   
@@ -277,7 +277,7 @@
         
         map.addLayer(markers);
         
-        loadMarkers();
+        updateMarkers();
     });
     
 </script>

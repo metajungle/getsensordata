@@ -10,7 +10,7 @@ App.FacetRoute = Ember.Route.extend({
     Ember.Instrumentation.subscribe("facet.properties.set", {
       before: function(name, timestamp, payload) {
         console.log('Recieved ', name, ' at ' + timestamp + ' with payload: ', payload);
-        controller.send('setProperties', payload);
+        controller.send('updateProperties', payload);
       },
       after: function() {}
     });
@@ -27,15 +27,41 @@ App.FacetController = Ember.ArrayController.extend({
     lookupItemController: function(object) {
         return object.get('type');
     },
-    setProperties: function(context) {
-        if (Object.prototype.toString.call(context) === '[object Array]') {
-            for (var i = 0; i < context.length; i++) {
-                var p = context[i];
-                this.pushObject(App.Property.create({
-                    name: p['name'], 
-                    uri: p['uri']
-                }));
+    updateProperties: function(properties) {
+        if (Object.prototype.toString.call(properties) === '[object Array]') {
+            console.log('PR: ' + properties.length);
+            var newItems = [];
+            var items = this.get('content'); 
+            console.log('IT: ' + items.length);
+            if (items.length > 0) {
+                for (var i = 0; i < properties.length; i++) {
+                    var p = properties[i];
+                    for (var j = 0; j < items.length; j++) {
+                        var item = items[j];
+                        if (p['uri'] == item['uri'] && p['name'] == item['name']) {
+                            newItems.pushObject(item); 
+                        }
+                    }
+                }
+                this.set('content', newItems);
+            } else {
+                console.log('PR: ' + properties.length);
+                for (var i = 0; i < properties.length; i++) {
+                    var p = properties[i];
+                    this.pushObject(App.Property.create({
+                        name: p['name'],
+                        uri: p['uri']
+                    }));
+                }
             }
+                
+            //     // TODO: do not add existing properties 
+            //     
+            //     this.pushObject(App.Property.create({
+            //         name: p['name'],
+            //         uri: p['uri']
+            //     }));
+            // }
         }
     }, 
     tap: function(o) {
@@ -59,6 +85,8 @@ App.FacetController = Ember.ArrayController.extend({
             }
         }
         o.tap();
+
+        updateMarkers(createFilter(this.get('content')));
     }, 
     create: function() {
         this.pushObject(App.Test.create({
@@ -78,8 +106,10 @@ App.FacetController = Ember.ArrayController.extend({
         })); 
     }, 
     remove: function(o) {
-        console.log('Delete')
         this.removeObject(o);
+    }, 
+    clear: function() {
+        this.set('content', Ember.A());
     }
 });
 
@@ -98,7 +128,7 @@ App.PropertyController = Ember.ObjectController.extend({
 
 App.Facet = Ember.Object.extend({
     tap: function() {
-        console.log('Hi from the object: ' + this.get('name'));
+        // console.log('Hi from the object: ' + this.get('name'));
     }, 
     setOn: function(status) {
         this.set('on', status);
@@ -114,7 +144,7 @@ App.Service = Ember.Object.extend({
     endpoint: '', 
     on: false, 
     tap: function() {
-        console.log('Hi from SERVICE: ' + this.get('name'));
+        // console.log('Hi from SERVICE: ' + this.get('name'));
     }, 
     setOn: function(status) {
         this.set('on', status);
@@ -130,7 +160,7 @@ App.Property = Ember.Object.extend({
     uri: '', 
     on: false, 
     tap: function() {
-        console.log('Hi from PROPERTY: ' + this.get('name'));
+        // console.log('Hi from PROPERTY: ' + this.get('name'));
     }, 
     setOn: function(status) {
         this.set('on', status);
