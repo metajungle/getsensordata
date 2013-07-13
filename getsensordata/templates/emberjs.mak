@@ -55,7 +55,7 @@
         <div class="tab-content">
             <div class="tab-pane active" id="tab1">
             <p>
-              <button id="btn-clear-property" class="pure-button pure-button-warning">
+              <button id="btn-clear-property" class="pure-button pure-button-warning pure-button-disabled">
                 <i class="icon icon-remove icon-white"></i> Clear filter
               </button>
             </p>
@@ -151,6 +151,7 @@
     }
     
     var features = [];
+    var observedProperties = [];
     
     function getFeatures(_callback, _filter) {
          $.getJSON('/static/geojson/ndbc.geojson', function(data) {
@@ -198,16 +199,20 @@
         }).addTo(markers); 
         
         // add properties
-        var observedProperties = [];
-        for (var i = 0; i < props.length; i++) {
-            var p = props[i];
-            observedProperties.push({
-                name: uriPretty(p), 
-                uri: p
-            }); 
+        if (observedProperties.length > 0) {
+            
+        } else {
+            var ps = [];
+            for (var i = 0; i < props.length; i++) {
+                var p = props[i];
+                ps.push({
+                    name: uriPretty(p), 
+                    uri: p
+                }); 
+            }
+            Ember.Instrumentation.instrument("facet.properties.set", ps);
         }
-        Ember.Instrumentation.instrument("facet.properties.set", 
-            observedProperties);
+
     }
     
     function updateMarkers(_filter) {
@@ -347,7 +352,8 @@
         $("#btn-clear-property").click(function() {
             // var cls = 'pure-button-secondary';
             // $(".btn-filter-property").removeClass(cls);
-            // $("#btn-clear-property").addClass('pure-button-disabled');
+            $(this).addClass('pure-button-disabled');
+            Ember.Instrumentation.instrument("facet.properties.clear");
             updateMarkers();
         });
 
