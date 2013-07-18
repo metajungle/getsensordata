@@ -14,12 +14,6 @@ App.FacetRoute = Ember.Route.extend({
       },
       after: function() {}
     });
-    Ember.Instrumentation.subscribe("facet.properties.clear", {
-      before: function(name, timestamp, payload) {
-        controller.send('clear', payload);
-      },
-      after: function() {}
-    });
   }
 });
 
@@ -69,7 +63,7 @@ App.FacetController = Ember.ArrayController.extend({
     }, 
     tap: function(o) {
         var items = this.get('content');
-        // console.log('Hello from controller: ' + o.get('name'));
+        console.log('Hello from controller: ' + o.get('name'));
         // console.log('Items: ' + items.length); 
         if (o.isOn()) {
             // console.log('Nothing to do');
@@ -78,13 +72,15 @@ App.FacetController = Ember.ArrayController.extend({
         for (var i = 0; i < items.length; i++) {
             // true if this item, false otherwise
             // compare by type only 
-            if (items[i].get('type') == o.get('type')) 
+            if (items[i].get('type') == o.get('type')) {
+                console.log(items[i] == 0 ? "TRUE" : "FALSE");
                 items[i].setOn(items[i] == o)
+            }
         }
         for (var i = 0; i < items.length; i++) {
             var item = items[i];
             if (item.isOn()) {
-                // console.log('Filter by: ' + item.get('name'));
+                console.log('Filter by: ' + item.get('name'));
             }
         }
         o.tap();
@@ -114,11 +110,11 @@ App.FacetController = Ember.ArrayController.extend({
         this.removeObject(o);
     }, 
     clear: function() {
-        // this.set('content', Ember.A());
         var items = this.get('content');
         for (var i = 0; i < items.length; i++) {
             items[i].setOn(false);
         }
+        updateMarkers();
     }
 });
 

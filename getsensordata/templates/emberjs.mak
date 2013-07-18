@@ -42,51 +42,27 @@
         <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
         <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
         <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-        
     </div>
     </script>
     
     <script type="text/x-handlebars" data-template-name="facet">
-    <div class="tabbable"> 
-        <ul class="nav nav-tabs">
-            <li class="active"><a href="#tab1" data-toggle="tab">Observed properties</a></li>
-            <li><a href="#tab2" data-toggle="tab">Services</a></li>
-        </ul>
-        <div class="tab-content">
-            <div class="tab-pane active" id="tab1">
-            <p>
-              <button id="btn-clear-property" class="pure-button pure-button-warning pure-button-disabled">
-                <i class="icon icon-remove icon-white"></i> Clear filter
-              </button>
-            </p>
-            {{#each controller}}
-            {{#if isProperty}}
-            <button {{action 'tap' this}} 
-                    {{bindAttr class="on :pure-button :pure-button-small :button-facet"}}
-                    href="#">
+    <div class="column">
+        <button {{action 'clear'}} class="pure-button pure-button-warning">
+          <i class="icon icon-remove icon-white"></i> Clear
+        </button>
+        <ul class="list">
+        {{#each controller}}
+        {{#if isProperty}}
+            <li {{action 'tap' this}}
+                {{bindAttr title="uri"}}
+                {{bindAttr class="on :button-facet"}}>
                 <span class="op-name">{{name}}</span>
                 <br />
                 <span class="op-uri">{{uri}}</span>
-            </button>
-            {{/if}}
-            {{/each}}
-            </div>
-            <div class="tab-pane" id="tab2">
-            Services:
-            {{#each controller}}
-            {{#if isService}}
-            <div {{bindAttr class="on :item"}}>
-                <p>
-                <button {{action 'tap' this}} class="pure-button">{{name}}</button>
-                </p>
-                <p>
-                {{view Ember.TextField valueBinding='name'}}
-                </p>
-            </div>
-            {{/if}}
-            {{/each}}
-            </div>            
-        </div>
+            </li>
+        {{/if}}
+        {{/each}}
+        </ul>
     </div>
     </script>    
 
@@ -124,17 +100,16 @@
                 return namePretty(uri.filename());
             }
         } else if (protocol == 'urn') {
-            // TODO: to implement
+            var idx = uri.path().lastIndexOf(':');
+            if (idx != -1) {
+                return namePretty(uri.path().substring(idx + 1));
+            }
         }
         return value;
     }
     
     function createFilter(items) {
         var fn = function(f) {
-            // for (var i = 0; i < items.length; i++) {
-            //     var item = items[i];
-            //     console.log('URI: ' + item.get('uri') + "; S: " + item.get('on'));
-            // }
             var show = false;
             var ps = f.properties['offering-properties'];
             for (var i = 0; i < items.length; i++) {
@@ -154,7 +129,7 @@
     var observedProperties = [];
     
     function getFeatures(_callback, _filter) {
-         $.getJSON('/static/geojson/ndbc.geojson', function(data) {
+         $.getJSON('/static/geojson/all.geojson', function(data) {
              features = data.features; 
              _callback(data.features, _filter);
          });
@@ -164,6 +139,7 @@
         markers.clearLayers();
 
         var props = [];
+        var count = 0;
         
         var geojson = L.geoJson(features, {
             pointToLayer: function(feature, latlng) {
@@ -189,6 +165,8 @@
                     }
                 }
                 
+                count++;
+                
                 marker.bindPopup(popup, {
                     closeButton: false
                 });
@@ -197,6 +175,8 @@
             // filter: _filter ? _filter : function(f) { return true; }
             filter: _filter ? _filter : null
         }).addTo(markers); 
+        
+        console.log('Markers: ' + count);
         
         // add properties
         if (observedProperties.length > 0) {
@@ -222,115 +202,11 @@
         } else {
             updateFeatures(features, _filter);     
         }
-        
-        // console.log(features.length);
-        // 
-        // markers.clearLayers();
-        // 
-        // var props = [];
-        // var geojson = L.geoJson(features, {
-        //     pointToLayer: function(feature, latlng) {
-        //         var marker = 
-        //             L.marker(latlng, {
-        //                     icon:  L.mapbox.marker.icon({
-        //                         'marker-color': 'f0f0f0', 
-        //                         'marker-size': 'small'
-        //                     }), 
-        //             });
-        //         var popup = 
-        //             '<p>' + 
-        //             feature.properties['offering-id'] + 
-        //             '</p>';
-        //             
-        //         var ps = feature.properties['offering-properties']
-        //         if (ps) {
-        //             for (var i = 0; i < ps.length; i++) {
-        //                 var p = ps[i];
-        //                 if (!props.contains(p)) {
-        //                     props.pushObject(p);
-        //                 }
-        //             }
-        //         }
-        //         
-        //         marker.bindPopup(popup, {
-        //             closeButton: false
-        //         });
-        //         return marker;
-        //     }, 
-        //     filter: _filter ? _filter : function(f) { return true; }
-        // }).addTo(markers); 
-        // 
-        // // add properties
-        // var observedProperties = [];
-        // for (var i = 0; i < props.length; i++) {
-        //     var p = props[i];
-        //     observedProperties.push({
-        //         name: uriPretty(p), 
-        //         uri: p
-        //     }); 
-        // }
-        // Ember.Instrumentation.instrument("facet.properties.set", 
-        //     observedProperties); 
     }
-        
-    function updateMarkersOld(_filter) {
-    
-        $.getJSON('/static/geojson/ndbc.geojson', function(data) {
-            markers.clearLayers();
-            var props = [];
-            var geojson = L.geoJson(data.features, {
-                pointToLayer: function(feature, latlng) {
-                    var marker = 
-                        L.marker(latlng, {
-                                icon:  L.mapbox.marker.icon({
-                                    'marker-color': 'f0f0f0', 
-                                    'marker-size': 'small'
-                                }), 
-                        });
-                    var popup = 
-                        '<p>' + 
-                        feature.properties['offering-id'] + 
-                        '</p>';
-                    
-                    var ps = feature.properties['offering-properties']
-                    if (ps) {
-                        for (var i = 0; i < ps.length; i++) {
-                            var p = ps[i];
-                            if (!props.contains(p)) {
-                                props.pushObject(p);
-                            }
-                        }
-                    }
-                
-                    marker.bindPopup(popup, {
-                        closeButton: false
-                    });
-                    return marker;
-                }, 
-                filter: _filter ? _filter : function(f) { return true; }
-            }).addTo(markers); 
-        
-            // add properties
-            var observedProperties = [];
-            for (var i = 0; i < props.length; i++) {
-                var p = props[i];
-                observedProperties.push({
-                    name: uriPretty(p), 
-                    uri: p
-                }); 
-            }
-            Ember.Instrumentation.instrument("facet.properties.set", 
-                observedProperties); 
-            // for (var i = 0; i < props.length; i++) {
-            //     var p = props[i];
-            //     //App.propertiesController.add(uriPretty(p), p);
-            // }
-        });        
-    }
-    
+
     $(document).ready(function() {
         
-        var map = L.mapbox.map('map', 'examples.map-4l7djmvo', {
+        var map = L.mapbox.map('map', 'metajungle.map-hmyeuylc', {
             scrollWheelZoom: false
         }).setView([23, -95], 3);
     
@@ -349,37 +225,37 @@
         });
     
         // clear properties filters
-        $("#btn-clear-property").click(function() {
-            // var cls = 'pure-button-secondary';
-            // $(".btn-filter-property").removeClass(cls);
-            $(this).addClass('pure-button-disabled');
-            Ember.Instrumentation.instrument("facet.properties.clear");
-            updateMarkers();
-        });
+        // $("#btn-clear-property").click(function() {
+        //     // var cls = 'pure-button-secondary';
+        //     // $(".btn-filter-property").removeClass(cls);
+        //     $(this).addClass('pure-button-disabled');
+        //     Ember.Instrumentation.instrument("facet.properties.clear");
+        //     updateMarkers();
+        // });
 
         // toggles a properties filter 
-        $(".btn-filter-property").click(function() {
-            var cls = 'pure-button-secondary';
-            $(".btn-filter-property").removeClass(cls);
-            $(this).addClass(cls);
-            $("#btn-clear-property").removeClass('pure-button-disabled');
-            var uri = $(this).data('uri');
-            updateMarkers(function(f) {
-                var ps = f.properties['offering-properties'];
-                if (ps && ps.indexOf(uri) >= 0)
-                    return true;
-                return false;
-            });
-        });
+        // $(".btn-filter-property").click(function() {
+        //     var cls = 'pure-button-secondary';
+        //     $(".btn-filter-property").removeClass(cls);
+        //     $(this).addClass(cls);
+        //     $("#btn-clear-property").removeClass('pure-button-disabled');
+        //     var uri = $(this).data('uri');
+        //     updateMarkers(function(f) {
+        //         var ps = f.properties['offering-properties'];
+        //         if (ps && ps.indexOf(uri) >= 0)
+        //             return true;
+        //         return false;
+        //     });
+        // });
         
-        $("#select_property li").click(function() {
-            $(this).parent().each(function(idx, val) {
-               $(this).removeClass('active');
-            });
-           $(this).addClass('active');
-           $("#op-selector-value").text($(this).find(".op-name").text());
-           return true;
-        });
+        // $("#select_property li").click(function() {
+        //     $(this).parent().each(function(idx, val) {
+        //        $(this).removeClass('active');
+        //     });
+        //    $(this).addClass('active');
+        //    $("#op-selector-value").text($(this).find(".op-name").text());
+        //    return true;
+        // });
         
         // var food = document.getElementById('filter-food');
         // var all = document.getElementById('filter-all');
