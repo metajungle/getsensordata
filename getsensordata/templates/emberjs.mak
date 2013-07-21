@@ -7,7 +7,7 @@
   
   <script src="/static/js/libs/jquery-1.9.1.js"></script>
   
-  <script src='http://api.tiles.mapbox.com/mapbox.js/v1.1.0/mapbox.js'></script>
+  <script src='http://api.tiles.mapbox.com/mapbox.js/v1.3.0/mapbox.js'></script>
   <script src="/static/leaflet.markercluster/leaflet.markercluster.js"></script>
 
   <script src="/static/bootstrap/js/bootstrap.min.js"></script>
@@ -135,11 +135,206 @@
          });
     }
     
-    function updateFeatures(features, _filter) {
+    var pIndex = {};
+    
+    // temp
+    var property;
+    
+    var allLayers = []; 
+    var all = [];
+    
+    function updateFeatures2(features, _filter) {
+        
+        // new test 
         markers.clearLayers();
+
+        var layers = pIndex[property];
+        if (layers) {
+            markers.addLayers(layers);
+            // for (var i = 0; i < layers.length; i++) {
+            //     var layer = layers[i];
+            //     markers.addLayer(layer);
+            // }
+        }
+        
+        return;
+        
+        // var ms = all.splice(0);
+        // ms.splice(100,100);
+        // all.splice(0,200);
+        
+        // test
+        console.log('Layers: ' + allLayers.length);
+        console.log('TEST: ' + markers.hasLayer(allLayers[0]));
+        keep = allLayers.slice(0);
+        var remove = keep.splice(0,10);
+        console.log('Remove: ' + remove.length);
+        
+        for (var i = 0; i < remove.length; i++) {
+            console.log('CONTAINS: ' + markers.hasLayer(remove[i]));
+            markers.removeLayer(remove[i]);
+        }
+        
+        return;
+        
+        // for (var i = 0; i < allLayers.length; i++) {
+        //     var l = allLayers[i];
+        //     if ()
+        //     
+        // }
+        
+        
+        // remove - again
+        markers.eachLayer(function(l) {
+            var found = false;
+            for (var i = 0; i < keep.length; i++) {
+                var k = keep[i];
+                if (k == l) found = true;
+            }
+            if (!found) markers.removeLayer(l);
+        });
+        
+        return;
+        
+        // remove 
+        var ls = markers.getLayers();
+        var toRemove = ls.filter(function(e, idx, array) {
+            return !(keep.indexOf(e) > -1);
+        });
+        for (var i = 0; i < toRemove.length; i++) {
+            markers.removeLayer(toRemove[i]);
+        }
+        // var rm = [];
+        // var rm = ls.splice()
+        // for (int i = 0; i < ls.length; i++) {
+        //     var l = ls[i];
+        //     var k = false;
+        //     for (int j = 0; j < keep.length; j++) {
+        //         if ()
+        //     }
+        //     if (markers.hasLayer())
+        // }
+        
+        return;
+        
+        // add
+        for (var i = 0; i < keep.length; i++) {
+            var k = keep[i];
+            if (!markers.hasLayer(k)) {
+                markers.addLayer(k);
+            }
+        }
+        
+        // var ls = markers.getLayers();
+        // for (var j = 0; j < ls.length; j++) {
+        //     var keep = false;
+        //     for (var i = 0; i < all.length; i++) {
+        //         
+        //         // var geojson = all[i];
+        //         // if (!markers.hasLayer(geojson))
+        //         //     markers.addLayer(geojson);
+        //         // else
+        //         //     markers.removeLayer(geojson);
+        //         // all[i].addTo(markers);
+        //     }
+        //     if (!keep) {
+        //         markers.removeLayer(ls[j]);
+        //     }
+        //     
+        // }
+        
+        return;
+        
+        for (var i = 0; i < all.length; i++) {
+            var geojson = all[i];
+            if (!markers.hasLayer(geojson))
+                markers.addLayer(geojson);
+            else
+                markers.removeLayer(geojson);
+            // all[i].addTo(markers);
+        }
+        // markers.addLayers(all);
+    }
+    
+    function updateFeatures(features, _filter) {
+        // markers.clearLayers();
 
         var props = [];
         var count = 0;
+        
+        for (var i = 0; i < features.length; i++) {
+            var f = features[i];
+            var geojson = L.geoJson(f, {
+                pointToLayer: function(feature, latlng) {
+                    var marker = L.marker(latlng, {
+                                icon:  L.mapbox.marker.icon({
+                                    'marker-color': 'f0f0f0', 
+                                    'marker-size': 'small'
+                                }), 
+                    });
+                    var popup = 
+                        '<p>' + 
+                        feature.properties['offering-id'] + 
+                        '</p>';
+                
+                    var ps = feature.properties['offering-properties']
+                    if (ps) {
+                        for (var i = 0; i < ps.length; i++) {
+                            var p = ps[i];
+                            if (p in pIndex) {
+                                // push onto existing array 
+                                pIndex[p].push(marker);
+                            } else {
+                                // create new array
+                                pIndex[p] = [marker];
+                            }
+                            // if (!props.contains(p)) {
+                            //     props.pushObject(p);
+                            // }
+                        }
+                    }
+            
+                    count++;
+            
+                    marker.bindPopup(popup, {
+                        closeButton: false
+                    });
+                    return marker;
+               }
+            });
+            
+            var l = markers.addLayer(geojson);
+            allLayers.push(geojson);
+            all.push(geojson);
+        }
+        
+        // markers.eachLayer(function(l) {
+        //     allLayers.push(l);
+        // });
+        
+        // console.log('ALL: ' + markers.getLayers().length);
+        // allLayers = markers.getLayers();
+        console.log('ALL2: ' + allLayers.length);
+        
+        props = Object.keys(pIndex);
+        console.log('Props: ' + props.length);
+        
+        // add properties
+        if (observedProperties.length <= 0) {
+            var ps = [];
+            for (var i = 0; i < props.length; i++) {
+                var p = props[i];
+                ps.push({
+                    name: uriPretty(p), 
+                    uri: p
+                }); 
+            }
+            Ember.Instrumentation.instrument("facet.properties.set", ps);
+        }        
+        
+        return;
+        
+        console.log('ALL: ' + all.length)
         
         var geojson = L.geoJson(features, {
             pointToLayer: function(feature, latlng) {
@@ -172,6 +367,7 @@
                 });
                 return marker;
             }, 
+            // TODO: can remove filter, not used? 
             // filter: _filter ? _filter : function(f) { return true; }
             filter: _filter ? _filter : null
         }).addTo(markers); 
@@ -198,9 +394,10 @@
     function updateMarkers(_filter) {
         
         if (features.length == 0) {
+            // TODO: can remove _filter argument, not used 
             getFeatures(updateFeatures, _filter); 
         } else {
-            updateFeatures(features, _filter);     
+            updateFeatures2(features, _filter);
         }
     }
 
@@ -210,120 +407,6 @@
             scrollWheelZoom: false
         }).setView([23, -95], 3);
     
-        $("#test").click(function() {
-            // App.OP.FIXTURES.clear();
-            // for (r in App.OP.find()) {
-            //     r.deleteRecord();
-            // }
-            App.propertiesController.add('My property', 'http://www.google.com');
-            // App.OP.createRecord({
-            //     id: 2,
-            //     name: 'Hello!',
-            //     uri: 'http://www.google.com'
-            // });
-            //App.OP.FIXTURES = [{'id':2, 'name':'Hello', 'uri':'http://www.google.com'}];
-        });
-    
-        // clear properties filters
-        // $("#btn-clear-property").click(function() {
-        //     // var cls = 'pure-button-secondary';
-        //     // $(".btn-filter-property").removeClass(cls);
-        //     $(this).addClass('pure-button-disabled');
-        //     Ember.Instrumentation.instrument("facet.properties.clear");
-        //     updateMarkers();
-        // });
-
-        // toggles a properties filter 
-        // $(".btn-filter-property").click(function() {
-        //     var cls = 'pure-button-secondary';
-        //     $(".btn-filter-property").removeClass(cls);
-        //     $(this).addClass(cls);
-        //     $("#btn-clear-property").removeClass('pure-button-disabled');
-        //     var uri = $(this).data('uri');
-        //     updateMarkers(function(f) {
-        //         var ps = f.properties['offering-properties'];
-        //         if (ps && ps.indexOf(uri) >= 0)
-        //             return true;
-        //         return false;
-        //     });
-        // });
-        
-        // $("#select_property li").click(function() {
-        //     $(this).parent().each(function(idx, val) {
-        //        $(this).removeClass('active');
-        //     });
-        //    $(this).addClass('active');
-        //    $("#op-selector-value").text($(this).find(".op-name").text());
-        //    return true;
-        // });
-        
-        // var food = document.getElementById('filter-food');
-        // var all = document.getElementById('filter-all');
-
-        // food.onclick = function(e) {
-        //     all.className = '';
-        //     this.className = 'active';
-        //     // The setFilter function takes a GeoJSON feature object
-        //     // and returns true to show it or false to hide it.
-        //     // clusters.setFilter(function(f) {
-        //     //     return f.properties['marker-symbol'] === 'fast-food';
-        //     // });
-        //     updateMarkers(function(f) {
-        //         var props = f.properties['Observed properties'];
-        //         if (props && props.indexOf("Air Temperature") >= 0)
-        //             return true;
-        //         // return f.properties['marker-symbol'] === 'fast-food';
-        //     });
-        //     return false;
-        // };
-
-        // all.onclick = function() {
-        //     food.className = '';
-        //     this.className = 'active';
-        //     // clusters.setFilter(function(f) {
-        //     //     // Returning true for all markers shows everything.
-        //     //     return true;
-        //     // });
-        //     updateMarkers();
-        //     return false;
-        // };        
-  
-        // $.getJSON('/static/geojson/ndbc.geojson', function(data) {
-        //   
-        //     clusters = new L.MarkerClusterGroup({
-        //         showCoverageOnHover: true
-        //     });
-        // 
-        //     var points = L.geoJson(data.features, {
-        //         pointToLayer: function(feature, latlng) {
-        //             var marker = 
-        //                 L.marker(latlng, {
-        //                         icon:  L.mapbox.marker.icon({
-        //                             // 'marker-symbol': 'post', 
-        //                             'marker-color': 'f0f0f0', 
-        //                             'marker-size': 'small'
-        //                         }), 
-        //                 });
-        //             var popup = 
-        //                 '<p>' + 
-        //                 feature.properties['Offering Id'] + 
-        //                 '</p>';
-        //                 
-        //             marker.bindPopup(popup, {
-        //                 closeButton: false
-        //             });
-        //             // clusters.addLayer(marker);
-        //             return marker;
-        //         }, 
-        //     }).addTo(clusters);
-        // 
-        //     // map.addLayer(clusters);
-        //     clusters.on('click', function(e) {
-        //           map.panTo(e.layer.getLatLng());
-        //     });
-        // });
-        
-        
         // map.addLayer(clusters);
         markers.on('click', function(e) {
               map.panTo(e.layer.getLatLng());

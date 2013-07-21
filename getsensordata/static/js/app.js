@@ -69,20 +69,21 @@ App.FacetController = Ember.ArrayController.extend({
             // console.log('Nothing to do');
             return;
         }
+        property = o.get('uri');
         for (var i = 0; i < items.length; i++) {
             // true if this item, false otherwise
             // compare by type only 
             if (items[i].get('type') == o.get('type')) {
-                console.log(items[i] == 0 ? "TRUE" : "FALSE");
+                // console.log(items[i] == 0 ? "TRUE" : "FALSE");
                 items[i].setOn(items[i] == o)
             }
         }
-        for (var i = 0; i < items.length; i++) {
-            var item = items[i];
-            if (item.isOn()) {
-                console.log('Filter by: ' + item.get('name'));
-            }
-        }
+        // for (var i = 0; i < items.length; i++) {
+        //     var item = items[i];
+        //     if (item.isOn()) {
+        //         console.log('Filter by: ' + item.get('name'));
+        //     }
+        // }
         o.tap();
 
         updateMarkers(createFilter(this.get('content')));
