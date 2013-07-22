@@ -33,6 +33,9 @@ header {
   width: 100px;
   float: right; }
 
+.facet-column {
+  padding: 6px; }
+
 .column {
   width: 300px; }
 
@@ -49,7 +52,7 @@ ul.list {
       background-color: #ccc; }
     ul.list li:nth-child(odd) {
       background-color: #f0f0f0; }
-    ul.list li.on {
+    ul.list li.active {
       background: #42b8dd;
       /* this is a light blue */ }
 

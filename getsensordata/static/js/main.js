@@ -20,15 +20,27 @@ require(['jquery', 'util'], function($, util) {
     // holds all features loaded from backend 
     var allFeatures = [];
 
+    // active facet selections 
+    var facetSelection = {};
+
+    // An index holds:
+    // 
+    //    { 'offering-id' -> [
+    //        'feature': feature, 
+    //        'marker' : marker/layer 
+    //      ]
+    //    }
+    // 
+
+    // indexed markers 
+    // pIndex is for properties
     var pIndex = {};
-
-    // temp
-    var property;
-
-
-    var allLayers = []; 
-    var all = [];
+    // sIndex is for services 
+    var sIndex = {};
     
+    // helper to hold service endpoint -> service title data
+    var _serviceTitles = {};
+
     var cluster = new L.MarkerClusterGroup({
         showCoverageOnHover: true
     }); 
@@ -67,17 +79,67 @@ require(['jquery', 'util'], function($, util) {
         return fn;
     }
     
-    function indexMarker(feature, marker) {
-        var ps = feature.properties['offering-properties']
-        if (ps) {
-            for (var i = 0; i < ps.length; i++) {
-                var p = ps[i];
-                if (p in pIndex) {
+    // function indexMarker(feature, marker) {
+    //     var ps = feature.properties['offering-properties'];
+    //     if (ps) {
+    //         for (var i = 0; i < ps.length; i++) {
+    //             var p = ps[i];
+    //             if (p in pIndex) {
+    //                 // push onto existing array 
+    //                 pIndex[p].push(marker);
+    //             } else {
+    //                 // create new array
+    //                 pIndex[p] = [marker];
+    //             }
+    //         }
+    //     }
+    //     var s = feature.properties['service-endpoint'];
+    //     if (s) {
+    //         
+    //     }
+    // }
+    
+    function indexMarkers(offerings) {
+        // clear indexes and data
+        pIndex = {};
+        sIndex = {};
+        _serviceTitles = {}; 
+        
+        // construct index 
+        for (var oId in offerings) {
+            var elmt = offerings[oId];
+            var feature = elmt.feature;
+            var marker = elmt.marker;
+            // observed properties 
+            var ps = feature.properties['offering-properties'];
+            if (ps) {
+                for (var i = 0; i < ps.length; i++) {
+                    var p = ps[i];
+                    if (p in pIndex) {
+                        // push onto existing array 
+                        pIndex[p].push(elmt);
+                    } else {
+                        // create new array
+                        pIndex[p] = [elmt];
+                    }
+                }
+            }
+            // services 
+            var s = feature.properties['service-endpoint'];
+            if (s) {
+                if (s in sIndex) {
                     // push onto existing array 
-                    pIndex[p].push(marker);
+                    sIndex[s].push(elmt);
                 } else {
                     // create new array
-                    pIndex[p] = [marker];
+                    sIndex[s] = [elmt];
+                }
+            } 
+            // keep track of service titles 
+            if (!(s in _serviceTitles)) {
+                var title = feature.properties['service-title'];
+                if (title) {
+                    _serviceTitles[s] = title;
                 }
             }
         }
@@ -106,18 +168,26 @@ require(['jquery', 'util'], function($, util) {
         
     }
     
+    /**
+     * Callback function to update UI elements 
+     * 
+     */ 
     function updateUI() {
         // update UI
+
+        updateUIProperties();
+        updateUIServices(); 
+    }
+    
+    function updateUIProperties() {
+        var pList = $("#facet-properties-list");
+        // clear
+        pList.empty();
+        // update
         var ps = Object.keys(pIndex);
         console.log('Props: ' + ps.length);
-        
-        var list = $("#facet-properties-list");
-        // clear
-        list.empty();
-        // update
-        // var listItems = [];
         $(ps).each(function(idx, val) {
-            list.append(
+            pList.append(
                 '<li data-uri="' + val + '">' + 
                 '<span class="op-name">' + util.uriPretty(val) + '</span>' + 
                 '<br />' + 
@@ -125,24 +195,58 @@ require(['jquery', 'util'], function($, util) {
                 '</li>'
             );
         });
-        list.on('click', 'li', function() {
-            list.find('li').each(function() {
-               $(this).removeClass('on');
+        pList.on('click', 'li', function() {
+            // clear previously selected items 
+            pList.find('li.active').each(function() {
+               $(this).removeClass('active');
             });
-           // console.log('Clicked: ' + $(this).text()); 
-           $(this).addClass('on');
-           
-           // TODO: take action 
-           // TODO: fix
-           property = $(this).data('uri');
-           console.log('PR: ' + property);
-           updateFeatures();
-        });
+           $(this).addClass('active');
+
+           // update facet selection 
+           facetSelection['property'] = $(this).data('uri');
+
+           // update based on selection
+           updateFeatures(facetSelection);
+        });        
     }
+    
+    function updateUIServices() {
+        var sList = $("#facet-services-list");
+        // clear
+        sList.empty();
+        // update
+        var ss = Object.keys(sIndex);
+        console.log('Services: ' + ss.length);
+        $(ss).each(function(idx, val) {
+            var title = _serviceTitles[val] ? _serviceTitles[val] : "Untitled";
+            sList.append(
+                '<li data-uri="' + val + '">' + 
+                '<span class="op-name">' + title + '</span>' + 
+                '<br />' + 
+                '<span class="op-uri">' + val + '</span>' + 
+                '</li>'
+            );
+        });
+        sList.on('click', 'li', function() {
+            // clear previously selected items 
+            sList.find('li.active').each(function() {
+               $(this).removeClass('active');
+            });
+           $(this).addClass('active');
+
+           // update facet selection 
+           facetSelection['service'] = $(this).data('uri');
+
+           // update based on selection
+           updateFeatures(facetSelection);
+        });        
+    }    
     
     function _handleFeatures(features, _filter) {
         
         var count = 0;
+        
+        var markers = {};
         
         for (var i = 0; i < features.length; i++) {
             var f = features[i];
@@ -154,13 +258,18 @@ require(['jquery', 'util'], function($, util) {
                                     'marker-size': 'small'
                                 }), 
                     });
+                    
+                    var oId = feature.properties['offering-id'];
+                    
+                    // TODO: add more details 
                     var popup = 
-                        '<p>' + 
-                        feature.properties['offering-id'] + 
-                        '</p>';
+                        '<p>' + oId + '</p>';
 
-                    // index
-                    indexMarker(f, marker); 
+                    // add for indexing
+                    markers[oId] = {
+                        feature: feature, 
+                        marker: marker
+                    }
 
                     count++;
    
@@ -174,27 +283,83 @@ require(['jquery', 'util'], function($, util) {
    
             // add geojson feature/marker to cluster layer 
             cluster.addLayer(geojson);
-        }        
+        }     
+        
+        // TODO: put into a WebWorker? 
+        indexMarkers(markers); 
     }
     
     function updateFeatures(_facets) {
 
         // clear existing markers 
         cluster.clearLayers();
-
-        // TODO: handle facets 
-
-        var layers = pIndex[property];
-        console.log('Indexed layers found: ' + layers.length);
-        if (layers) {
-            cluster.addLayers(layers);
-            // for (var i = 0; i < layers.length; i++) {
-            //     var layer = layers[i];
-            //     markers.addLayer(layer);
-            // }
+        
+        var indexedElmts = [];
+        
+        // get the active 'service' facet
+        var s = _facets['service'];
+        if (s) {
+            var ls = sIndex[s];
+            if (ls) {
+                indexedElmts = indexedElmts.length == 0 ? 
+                    indexedElmts.concat(ls) : intersection(ls, indexedElmts);
+            }
         }
+
+        // get the active 'observed property' facet
+        var p = _facets['property'];
+        if (p) {
+            var ls = pIndex[p];
+            if (ls) {
+                indexedElmts = indexedElmts.length == 0 ? 
+                    indexedElmts.concat(ls) : intersection(ls, indexedElmts);
+                    // 
+                // markers = indexedElmts.concat(ls);
+            }
+        }
+        
+        var markers = [];
+        for (var i = 0; i < indexedElmts.length; i++) {
+            var elmt = indexedElmts[i];
+            markers.push(elmt.marker);
+        }
+        
+        cluster.addLayers(markers);
+        
+    }
     
-        return;
+    function getLayers(indexedElmts) {
+        var markers = [];
+        var offeringIds = [];
+        for (var i = 0; i < indexedElmts.length; i++) {
+            var elmt = indexedElmts[i];
+            var feature = elmt.feature;
+            var marker = elmt.marker;
+            var oId = feature.properties['offering-id'];
+            if (!(oId in offeringIds)) {
+                markers.push(marker);
+                offeringIds.push(oId);
+            }
+        }
+        return markers;
+    }
+    
+    function intersection(indexElmts1, indexElmts2) {
+        var markers = [];
+        for (var i = 0; i < indexElmts1.length; i++) {
+            var f1 = indexElmts1[i].feature;
+            var oId1 = f1.properties['offering-id'];
+            for (var j = 0; j < indexElmts2.length; j++) {
+                var f2 = indexElmts2[j].feature;
+                var marker = indexElmts2[j].marker;
+                var oId2 = f2.properties['offering-id'];
+                if (oId1 == oId2) {
+                    markers.push(marker);
+                    break;
+                }
+            }
+        }
+        return markers;
     }
     
     function initializeMarkers() {

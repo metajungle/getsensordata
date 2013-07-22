@@ -2,6 +2,7 @@ $media-phone: 767px;
 $media-default: 980px;
 
 $width-column: 300px;
+$padding: 6px;
 
 @mixin pointer {
   cursor: pointer;
@@ -39,6 +40,10 @@ header {
     float: right;
 }
 
+.facet-column {
+    padding: $padding;
+}
+
 .column {
   width: $width-column;
 }
@@ -62,7 +67,7 @@ ul.list {
         color: #f0f0f0;
       }
     }
-    &.on {
+    &.active {
       background: rgb(66, 184, 221); /* this is a light blue */
     }
   }
